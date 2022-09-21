@@ -24,6 +24,6 @@ Lastly, when using multple keys, besure to delete before adding the new key:
 ```
 - name: Change key
   run: |
-	ssh-add -D
+    ssh-add -D
     ssh-add - <<< "${{ secrets.ssh-private-key-2 }}"
 ```
