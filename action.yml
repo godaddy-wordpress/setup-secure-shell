@@ -1,0 +1,41 @@
+name: 'Setup SSH'
+
+description: 'Sets up secure shell (SSH), while also adding provided known hosts.'
+
+branding:
+  icon: terminal
+  color: black
+
+inputs:
+  ssh-known-hosts:
+    description: 'Known hosts to add.'
+    default: ''
+    required: false
+
+runs:
+  using: 'composite'
+  steps:
+
+    - name: Setup SSH directory
+      shell: bash
+      run: |
+        mkdir $HOME/.ssh -m 700
+
+    - name: Setup known hosts
+      shell: bash
+      run: |
+        KNOWN_HOSTS=$HOME/.ssh/known_hosts
+        touch $KNOWN_HOSTS
+        chmod 600 $KNOWN_HOSTS
+        echo "KNOWN_HOSTS=${KNOWN_HOSTS}" >> $GITHUB_ENV
+        echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl" >> $KNOWN_HOSTS
+        echo "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBEmKSENjQEezOmxkZMy7opKgwFB9nkt5YRrYMjNuG5N87uRgg6CLrbo5wAdT/y6v0mKV0U2w0WZ2YB/++Tpockg=" >> $KNOWN_HOSTS
+        echo "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==" >> $KNOWN_HOSTS
+        echo ${{ inputs.ssh-known-hosts }} >> $KNOWN_HOSTS
+
+    - name: Start SSH agent
+      shell: bash
+      run: |
+        eval `ssh-agent -a /tmp/ssh-auth.socket`
+        echo "SSH_AUTH_SOCK=${SSH_AUTH_SOCK}" >> $GITHUB_ENV
+        echo "SSH_AGENT_PID=${SSH_AGENT_PID}" >> $GITHUB_ENV
