@@ -1,10 +1,10 @@
-name: 'Setup SSH'
+name: Setup Secure Shell (SSH)
 
-description: 'Sets up secure shell (SSH), while also adding provided known hosts.'
+description: Set up secure shell (SSH), while also adding provided known hosts.
 
 branding:
   icon: terminal
-  color: black
+  color: gray-dark
 
 inputs:
   ssh-known-hosts:
