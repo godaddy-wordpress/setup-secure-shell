@@ -30,7 +30,7 @@ jobs:
           git clone git@github.com:godaddy-wordpress/coblocks.git
 
   test_known_hosts_default:
-    name: Known Hosts [default]
+    name: Known Hosts / Default
     runs-on: ubuntu-latest
     steps:
 
@@ -54,7 +54,7 @@ jobs:
           fi
 
   test_known_hosts_empty:
-    name: Known Hosts [empty]
+    name: Known Hosts / Empty
     runs-on: ubuntu-latest
     steps:
 
@@ -74,7 +74,7 @@ jobs:
           fi
 
   test_known_hosts_custom:
-    name: Known Hosts [custom]
+    name: Known Hosts / Custom
     runs-on: ubuntu-latest
     steps:
 
