@@ -1,4 +1,4 @@
-name: WIP Test
+name: "WIP Test / Setup"
 
 on:
   pull_request:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   test_setup:
-    name: Setup
+    name: Single
     runs-on: ubuntu-latest
     steps:
 
@@ -22,7 +22,7 @@ jobs:
           [[ -z "${SSH_AGENT_PID}" ]] && exit 1 || echo SSH_AGENT_PID=$SSH_AGENT_PID
 
   test_dual_setup:
-    name: Dual Setup
+    name: Dual
     runs-on: ubuntu-latest
     needs: test_setup
     steps:
