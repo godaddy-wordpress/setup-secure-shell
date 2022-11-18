@@ -1,6 +1,6 @@
 name: Setup Secure Shell (SSH)
 
-description: Set up secure shell (SSH), while also adding provided known hosts.
+description: Setup SSH, and optionally add known_hosts and one private key.
 
 branding:
   icon: terminal
@@ -11,31 +11,60 @@ inputs:
     description: 'Known hosts to add.'
     default: ''
     required: false
+  ssh-private-key:
+    description: 'Private key to add.'
+    default: ''
+    required: false
+  add-gh-known-hosts:
+    description: 'Whether to add GitHub known hosts.'
+    default: 'yes'
+    required: false
 
 runs:
   using: 'composite'
   steps:
 
-    - name: Setup SSH directory
+    - name: Create an .ssh directory, if not exists
       shell: bash
       run: |
-        mkdir $HOME/.ssh -m 700
+        if [ ! -d "$HOME/.ssh" ]; then
+          mkdir $HOME/.ssh -m 700
+        fi
 
-    - name: Setup known hosts
+    - name: Create known hosts file, if not exists
       shell: bash
       run: |
-        KNOWN_HOSTS=$HOME/.ssh/known_hosts
-        touch $KNOWN_HOSTS
-        chmod 600 $KNOWN_HOSTS
-        echo "KNOWN_HOSTS=${KNOWN_HOSTS}" >> $GITHUB_ENV
-        echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl" >> $KNOWN_HOSTS
-        echo "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBEmKSENjQEezOmxkZMy7opKgwFB9nkt5YRrYMjNuG5N87uRgg6CLrbo5wAdT/y6v0mKV0U2w0WZ2YB/++Tpockg=" >> $KNOWN_HOSTS
-        echo "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==" >> $KNOWN_HOSTS
-        echo ${{ inputs.ssh-known-hosts }} >> $KNOWN_HOSTS
+        KNOWN_HOSTS_FILE=$HOME/.ssh/known_hosts
+        [ ! -e "$KNOWN_HOSTS_FILE" ] && install -m 600 /dev/null $KNOWN_HOSTS_FILE
+        echo "KNOWN_HOSTS_FILE=${KNOWN_HOSTS_FILE}" >> $GITHUB_ENV
 
-    - name: Start SSH agent
+    - name: Add GitHub known hosts, if requested
+      if: ${{ inputs.add-gh-known-hosts == 'yes' }}
       shell: bash
       run: |
-        eval `ssh-agent -a /tmp/ssh-auth.socket`
-        echo "SSH_AUTH_SOCK=${SSH_AUTH_SOCK}" >> $GITHUB_ENV
-        echo "SSH_AGENT_PID=${SSH_AGENT_PID}" >> $GITHUB_ENV
+        cat << EOL >> $KNOWN_HOSTS_FILE
+        ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
+        ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBEmKSENjQEezOmxkZMy7opKgwFB9nkt5YRrYMjNuG5N87uRgg6CLrbo5wAdT/y6v0mKV0U2w0WZ2YB/++Tpockg=
+        ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
+        EOL
+
+    - name: Add custom known hosts, if exists
+      if: ${{ inputs.ssh-known-hosts != '' }}
+      shell: bash
+      run: |
+        echo "${{ inputs.ssh-known-hosts }}" >> $KNOWN_HOSTS_FILE
+
+    - name: Start SSH agent, if not already running
+      shell: bash
+      run: |
+        if [[ -z "${SSH_AGENT_PID}" ]]; then
+          eval `ssh-agent -a /tmp/ssh-auth.socket`
+          echo "SSH_AUTH_SOCK=${SSH_AUTH_SOCK}" >> $GITHUB_ENV
+          echo "SSH_AGENT_PID=${SSH_AGENT_PID}" >> $GITHUB_ENV
+        fi
+
+    - name: Add private key, if exists
+      if: ${{ inputs.ssh-private-key != '' }}
+      shell: bash
+      run: |
+        ssh-add - <<< ${{ inputs.ssh-private-key }}
