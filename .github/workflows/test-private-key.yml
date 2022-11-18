@@ -1,0 +1,30 @@
+name: WIP Test
+
+on:
+  pull_request:
+    branches:
+    - main
+
+jobs:
+  test_private_key:
+    name: Private Key
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup SSH
+        uses: ./
+        env:
+          COBLOCKS: ${{ secrets.SETUP_SECURE_SHELL_TEST_COBLOCKS_REPO_KEY }}
+        with:
+          ssh-private-key: $COBLOCKS
+
+      # Do not use this method in production, as we are only testing that the
+      # private key input works for this Action. In practice, you would not use
+      # this SSH tool for cloning a repo from GitHub, as that is handled
+      # beautifully with @actions/checkout using the ssh-key config.
+      - name: Expect to clone CoBlocks repo
+        run: |
+          git clone git@github.com:godaddy-wordpress/coblocks.git
