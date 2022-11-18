@@ -52,3 +52,23 @@ jobs:
             echo "${DEFAULT_KNOWN_HOSTS}"
             exit 1
           fi
+
+  test_known_hosts_empty:
+    name: Known Hosts (empty)
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup SSH
+        uses: ./
+        with:
+          add-gh-known-hosts: no
+
+      - name: Expect known_hosts to be empty
+        run: |
+          if [[ $(cat $KNOWN_HOSTS_FILE) != "" ]]; then
+            cat $KNOWN_HOSTS_FILE
+            exit 1
+          fi
