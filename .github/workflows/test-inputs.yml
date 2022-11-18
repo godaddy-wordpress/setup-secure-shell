@@ -51,4 +51,5 @@ jobs:
           cat $KNOWN_HOSTS_FILE
           echo "DEFAULT"
           echo "$DEFAULT_KNOWN_HOSTS"
+          echo "${DEFAULT_KNOWN_HOSTS}"
 
