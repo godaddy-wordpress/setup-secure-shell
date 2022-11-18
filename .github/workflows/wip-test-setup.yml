@@ -20,3 +20,32 @@ jobs:
       - name: Expect SSH_AGENT_PID to be present
         run: |
           [[ -z "${SSH_AGENT_PID}" ]] && exit 1 || echo SSH_AGENT_PID=$SSH_AGENT_PID
+
+  test_dual_setup:
+    name: Dual Setup
+    runs-on: ubuntu-latest
+    needs: test_setup
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup SSH
+        uses: ./
+
+      - name: Set the SSH_AGENT_PID test var to check.
+        run: |
+          echo "TEST_SSH_AGENT_PID=${SSH_AGENT_PID}" >> $GITHUB_ENV
+
+      - name: Setup SSH again
+        uses: ./
+
+      - name: Expect SSH_AGENT_PID and TEST_SSH_AGENT_PID to be equal
+        run: |
+          if [[ "${TEST_SSH_AGENT_PID}" != "${SSH_AGENT_PID}" ]]; then
+            echo TEST_SSH_AGENT_PID=$TEST_SSH_AGENT_PID
+            echo SSH_AGENT_PID=$SSH_AGENT_PID
+            exit 1
+          fi
+
+
