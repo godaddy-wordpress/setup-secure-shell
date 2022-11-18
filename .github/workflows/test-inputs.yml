@@ -72,3 +72,31 @@ jobs:
             cat $KNOWN_HOSTS_FILE
             exit 1
           fi
+
+  test_known_hosts_custom:
+    name: Known Hosts (custom)
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup SSH
+        uses: ./
+        with:
+          add-gh-known-hosts: no
+          ssh-known-hosts: |-
+            ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
+            ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBEmKSENjQEezOmxkZMy7opKgwFB9nkt5YRrYMjNuG5N87uRgg6CLrbo5wAdT/y6v0mKV0U2w0WZ2YB/++Tpockg=
+
+      - name: Expect known_hosts to equal custom input
+        run: |
+         CUSTOM_KNOWN_HOSTS="ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
+          ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBEmKSENjQEezOmxkZMy7opKgwFB9nkt5YRrYMjNuG5N87uRgg6CLrbo5wAdT/y6v0mKV0U2w0WZ2YB/++Tpockg="
+          if [[ $(cat $KNOWN_HOSTS_FILE) != "${CUSTOM_KNOWN_HOSTS}" ]]; then
+            echo "KNOWN"
+            cat $KNOWN_HOSTS_FILE
+            echo "CUSTOM"
+            echo "${CUSTOM_KNOWN_HOSTS}"
+            exit 1
+          fi
