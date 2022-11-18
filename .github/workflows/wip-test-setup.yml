@@ -19,4 +19,4 @@ jobs:
 
       - name: Expect SSH_AGENT_PID to be present
         run: |
-          if [[ -z "${SSH_AGENT_PID}" ]]; then exit 1; fi
+          [[ -z "${SSH_AGENT_PID}" ]] && exit 1 || echo SSH_AGENT_PID
