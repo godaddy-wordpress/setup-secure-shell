@@ -1,4 +1,4 @@
-name: Setup Secure Shell (SSH)
+name: Setup Secure Shell
 
 description: Setup SSH, and optionally add known_hosts and one private key.
 
