@@ -1,4 +1,4 @@
-name: "WIP Test / Inputs"
+name: "Test / Inputs"
 
 on:
   pull_request:
